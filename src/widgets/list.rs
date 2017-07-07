@@ -65,11 +65,11 @@ impl<'a> Widget for List<'a> {
 
         let max_index = min(self.items.len(), list_area.height as usize);
         for (i, &(item, style)) in self.items.iter().enumerate().take(max_index) {
-            buf.set_stringn(list_area.left(),
-                            list_area.top() + i as u16,
-                            item.as_ref(),
-                            list_area.width as usize,
-                            style);
+            buf.set_full_stringn(list_area.left(),
+                                 list_area.top() + i as u16,
+                                 item.as_ref(),
+                                 list_area.width as usize,
+                                 style);
         }
     }
 }
@@ -194,6 +194,7 @@ impl<'a> Widget for SelectableList<'a> {
 
         // Render items
         List::default()
+            .style(self.style.clone())
             .block(self.block.unwrap_or_default())
             .items(&items)
             .draw(area, buf);

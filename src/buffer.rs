@@ -1,5 +1,6 @@
 use std::cmp::min;
 use std::usize;
+use std::iter;
 
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -181,10 +182,14 @@ impl Buffer {
     /// Print at most the first n characters of a string if enough space is available
     /// until the end of the line
     pub fn set_stringn(&mut self, x: u16, y: u16, string: &str, limit: usize, style: &Style) {
+        self.set_full_stringn(x, y, string, min(limit, string.len()), style);
+    }
+
+    pub fn set_full_stringn(&mut self, x: u16, y: u16, string: &str, len: usize, style: &Style) {
         let mut index = self.index_of(x, y);
         let graphemes = UnicodeSegmentation::graphemes(string, true).collect::<Vec<&str>>();
-        let max_index = min((self.area.right() - x) as usize, limit);
-        for s in graphemes.into_iter().take(max_index) {
+        let max_index = min((self.area.right() - x) as usize, len);
+        for s in graphemes.into_iter().chain(iter::repeat(" ")).take(max_index) {
             self.content[index].symbol.clear();
             self.content[index].symbol.push_str(s);
             self.content[index].style = *style;
