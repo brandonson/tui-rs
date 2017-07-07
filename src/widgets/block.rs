@@ -49,6 +49,22 @@ impl<'a> Default for Block<'a> {
 }
 
 impl<'a> Block<'a> {
+    fn fits_in_rect(&self, area: &Rect) -> bool {
+        let yflags = border::TOP | border::BOTTOM;
+        let xflags = border::LEFT | border::RIGHT;
+        let yf_count =
+            if self.borders.contains(yflags) { 2 }
+            else if self.borders.intersects(yflags) { 1 }
+            else { 0 };
+        let xf_count =
+            if self.borders.contains(xflags) { 2 }
+            else if self.borders.intersects(xflags) { 1 }
+            else { 0 };
+        (yf_count <= area.height) && (xf_count <= area.width)
+    }
+}
+
+impl<'a> Block<'a> {
     pub fn title(mut self, title: &'a str) -> Block<'a> {
         self.title = Some(title);
         self
@@ -76,7 +92,7 @@ impl<'a> Block<'a> {
 
     /// Compute the inner area of a block based on its border visibility rules.
     pub fn inner(&self, area: &Rect) -> Rect {
-        if area.width < 2 || area.height < 2 {
+        if !self.fits_in_rect(area) {
             return Rect::default();
         }
         let mut inner = *area;
@@ -101,7 +117,7 @@ impl<'a> Block<'a> {
 impl<'a> Widget for Block<'a> {
     fn draw(&self, area: &Rect, buf: &mut Buffer) {
 
-        if area.width < 2 || area.height < 2 {
+        if !self.fits_in_rect(area) {
             return;
         }
 
